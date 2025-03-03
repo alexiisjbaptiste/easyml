@@ -66,3 +66,41 @@ def train(data_path: str, target: str, algorithm: str = "random_forest", test_si
 
     print(f"Model trained: {algorithm} | {metric_name}: {round(metric, 4)}")
     return pipeline, performance_data
+
+import json
+
+def train(data_path: str, target: str, algorithm: str = "random_forest", test_size=0.2):
+    """Trains an ML model and logs performance for the dashboard."""
+    df = pd.read_csv(data_path)
+    X, y, transformer = preprocess_data(df, target)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
+
+    model = MODELS.get(algorithm)
+    if model is None:
+        raise ValueError(f"Unsupported algorithm: {algorithm}. Choose from {list(MODELS.keys())}.")
+
+    pipeline = Pipeline([
+        ("transform", transformer),
+        ("model", model)
+    ])
+
+    pipeline.fit(X_train, y_train)
+    joblib.dump(pipeline, "model.pkl")
+
+    y_pred = pipeline.predict(X_test)
+
+    if algorithm == "logistic_regression":
+        metric = accuracy_score(y_test, y_pred.round())
+        metric_name = "Accuracy"
+    else:
+        metric = mean_squared_error(y_test, y_pred, squared=False)
+        metric_name = "RMSE"
+
+    # Store performance in a JSON file for the dashboard
+    performance_data = {"Model": algorithm, metric_name: round(metric, 4)}
+    with open("model_performance.json", "w") as f:
+        json.dump(performance_data, f)
+
+    print(f"Model trained: {algorithm} | {metric_name}: {round(metric, 4)}")
+    return pipeline, performance_data
+
