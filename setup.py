@@ -6,7 +6,7 @@ setup(
     description="A one-liner ML training and deployment library",
     author="Your Name",
     author_email="your.email@example.com",
-    url="https://github.com/YOUR_GITHUB_USERNAME/easyml",
+    url="https://github.com/alexiisjbaptiste/easyml",
     packages=find_packages(),
     install_requires=[
         "pandas",
